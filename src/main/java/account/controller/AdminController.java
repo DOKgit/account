@@ -7,10 +7,7 @@ import account.mapper.AccountMapper;
 import account.service.AdminService;
 import account.service.Event;
 import account.service.LogService;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -30,8 +27,7 @@ public class AdminController {
     LogService logService;
 
     @PutMapping("api/admin/user/role")
-    public AccountWithRolesDTO setTheRole(@Valid @RequestBody RoleOperationDTO roleOperationDTO, HttpServletRequest request, HttpMessageNotReadableException exception) {
-        System.out.println("HELLO" + exception.getHttpInputMessage());
+    public AccountWithRolesDTO setTheRole(@Valid @RequestBody RoleOperationDTO roleOperationDTO, HttpServletRequest request) {
         if (roleOperationDTO.getOperation().equals("GRANT")) {
             logService.addLogGrantRole(Event.GRANT_ROLE, roleOperationDTO.getUser(), request, roleOperationDTO.getRole());
         } else {

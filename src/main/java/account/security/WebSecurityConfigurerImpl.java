@@ -1,37 +1,43 @@
 package account.security;
 
 import account.bruteforce.LoginAuthenticationFailureHandler;
-import account.service.AccountService;
+import account.service.UserDetailsServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfiguration;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
-import org.springframework.security.web.authentication.AuthenticationFailureHandler;
-import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
-import org.springframework.web.filter.CommonsRequestLoggingFilter;
 
-@Configuration
 @EnableWebSecurity
 public class WebSecurityConfigurerImpl extends WebSecurityConfigurerAdapter {
+    private final UserDetailsServiceImpl userDetailsService;
 
     @Autowired
-    AccountService accountService;
+    public WebSecurityConfigurerImpl(UserDetailsServiceImpl userDetailsService) {
+        this.userDetailsService = userDetailsService;
+    }
 
+    @Bean
+    public PasswordEncoder getEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public DaoAuthenticationProvider authenticationProvider() {
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+        authProvider.setPasswordEncoder(getEncoder());
+        authProvider.setUserDetailsService(userDetailsService);
+        return authProvider;
+    }
 
     //try
     @Override
-    protected void configure(AuthenticationManagerBuilder auth) {
+    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth.authenticationProvider(authenticationProvider());
 
     }
@@ -58,7 +64,6 @@ public class WebSecurityConfigurerImpl extends WebSecurityConfigurerAdapter {
 
     }
 
-
     @Bean
     public AccessDeniedHandler getAccessDeniedHandler() {
         return new CustomAccessDeniedHandler();
@@ -70,21 +75,4 @@ public class WebSecurityConfigurerImpl extends WebSecurityConfigurerAdapter {
         failureHandler.setDefaultFailureUrl("/login?error=true");
         return failureHandler;
     }
-
-//    try
-    @Bean
-    public DaoAuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
-        daoAuthenticationProvider.setPasswordEncoder(getEncoder());
-        daoAuthenticationProvider.setUserDetailsService(accountService);
-        return daoAuthenticationProvider;
-    }
-
-    @Bean
-    public PasswordEncoder getEncoder() {
-        return new BCryptPasswordEncoder();
-    }
-
-
-
 }

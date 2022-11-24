@@ -6,10 +6,9 @@ import account.dto.NewPasswordDTO;
 import account.dto.NewPasswordRespondDTO;
 import account.mapper.AccountMapper;
 import account.service.*;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -36,7 +35,7 @@ public class Controller {
 
     @PostMapping("api/auth/changepass")
     public NewPasswordRespondDTO setNewPassword(@Valid @RequestBody NewPasswordDTO newPasswordDTO,
-                                                @AuthenticationPrincipal UserPrincipal user, HttpServletRequest request) {
+                                                @AuthenticationPrincipal UserDetails user, HttpServletRequest request) {
         logService.addLogChangePassword(Event.CHANGE_PASSWORD, user.getUsername(), request);
         return accountMapper.toNewPasswordRespondDTO(accountService.setPassword(newPasswordDTO, user));
     }

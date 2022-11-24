@@ -9,10 +9,7 @@ import account.repository.AccountRepository;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -20,7 +17,7 @@ import org.springframework.stereotype.Service;
 @Service
 @NoArgsConstructor
 @AllArgsConstructor
-public class AccountService implements UserDetailsService {
+public class AccountService {
 
     @Autowired
     AccountRepository accountRep;
@@ -60,7 +57,7 @@ public class AccountService implements UserDetailsService {
         return accountRep.findUserByEmailIgnoreCase(email).get();
     }
 
-    public Account setPassword(NewPasswordDTO newPasswordDTO, UserPrincipal user) {
+    public Account setPassword(NewPasswordDTO newPasswordDTO, UserDetails user) {
 
         if (encoder.matches(newPasswordDTO.getNew_password(), user.getPassword())) {
             throw new BadRequestException("The passwords must be different!");
@@ -70,19 +67,5 @@ public class AccountService implements UserDetailsService {
         account.setPassword(encoder.encode(newPasswordDTO.getNew_password()));
         accountRep.save(account);
         return account;
-    }
-
-    @Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-
-        Account account = accountRep.findUserByEmailIgnoreCase(email).get();
-        if (account == null) {
-            throw new UsernameNotFoundException("Not found: " + email);
-        }
-        UserDetails user = User.withUsername(account.getEmail())
-                .password(account.getPassword())
-                .accountLocked(account.isAccountNonLocked()).build();
-
-        return new UserPrincipal(account);
     }
 }

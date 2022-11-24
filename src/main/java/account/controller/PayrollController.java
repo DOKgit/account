@@ -5,11 +5,9 @@ import account.dto.StatusDTO;
 import account.entity.Payroll;
 import account.mapper.AccountMapper;
 import account.service.PayrollService;
-import account.service.UserPrincipal;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -27,19 +25,19 @@ public class PayrollController {
 
 
     @PostMapping("api/acct/payments")
-    public StatusDTO postPayments(@Valid @RequestBody List<PayrollDTO> list, @AuthenticationPrincipal UserPrincipal user) {
+    public StatusDTO postPayments(@Valid @RequestBody List<PayrollDTO> list, @AuthenticationPrincipal UserDetails user) {
         payrollService.addNewPayrolls(list, user);
         return new StatusDTO("Added successfully!");
     }
 
     @PutMapping("api/acct/payments")
-    public StatusDTO putPayment(@Valid @RequestBody PayrollDTO payrollDTO, @AuthenticationPrincipal UserPrincipal user) {
+    public StatusDTO putPayment(@Valid @RequestBody PayrollDTO payrollDTO, @AuthenticationPrincipal UserDetails user) {
         payrollService.putPayroll(payrollDTO, user);
         return new StatusDTO("Updated successfully!");
     }
 
     @GetMapping("/api/empl/payment")
-    public Optional<Object> getPaymentsByPeriod(@RequestParam Optional<String> period, @AuthenticationPrincipal UserPrincipal user) {
+    public Optional<Object> getPaymentsByPeriod(@RequestParam Optional<String> period, @AuthenticationPrincipal UserDetails user) {
         List<Payroll> list = payrollService.getPayrollsByPeriod(period, user.getUsername(), user);
         return list.size() == 1 ? Optional.of(accountMapper.toResponseAccountForPeriodDTOFromAccount(list.get(0))) : Optional.of(list.stream().map(payroll -> accountMapper.toResponseAccountForPeriodDTOFromAccount(payroll)).collect(Collectors.toList()));
     }

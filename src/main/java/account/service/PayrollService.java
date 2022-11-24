@@ -10,6 +10,7 @@ import account.repository.PayrollRepository;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -32,7 +33,7 @@ public class PayrollService {
     PayrollRepository payrollRep;
 
     @Transactional
-    public boolean addNewPayrolls(@Valid List<PayrollDTO> list, UserPrincipal user) {
+    public boolean addNewPayrolls(@Valid List<PayrollDTO> list, UserDetails user) {
         for (Payroll payroll : accountMapper.toPayrollListFromPayrollListDTO(list)) {
             Account account = accountRep.findUserByEmailIgnoreCase(payroll.getEmployee()).orElseThrow(() -> new BadRequestException("Account is not exists"));
             if (payroll.getEmployee().isEmpty() || payroll.getPeriod().isEmpty() || payroll.getSalary() < 0) {
@@ -55,7 +56,7 @@ public class PayrollService {
     }
 
     // public List<Payroll> getPayrollsByPeriod(Optional<String> period, String employee, UserDetailsImpl user) {
-    public List<Payroll> getPayrollsByPeriod(Optional<String> period, String employee, UserPrincipal user) {
+    public List<Payroll> getPayrollsByPeriod(Optional<String> period, String employee, UserDetails user) {
         Payroll payroll;
         List<Payroll> payrollList = new ArrayList<>();
         if (period.isEmpty()) {
@@ -74,7 +75,7 @@ public class PayrollService {
     }
 
     @Transactional
-    public void putPayroll(PayrollDTO payrollDTO, UserPrincipal user) {
+    public void putPayroll(PayrollDTO payrollDTO, UserDetails user) {
 
         Payroll payroll = payrollRep.findPayrollByEmployeeIgnoreCaseAndPeriod(payrollDTO.getEmployee(), payrollDTO.getPeriod())
                 .orElseThrow(() -> new BadRequestException("Payroll dont exists"));

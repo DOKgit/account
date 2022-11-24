@@ -1,46 +1,48 @@
 package account.service;
 
 import account.entity.Account;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-
+@Data
+@NoArgsConstructor
 public class UserDetailsImpl implements UserDetails {
-
-    private final String username;
-    private final String password;
-    private final List<GrantedAuthority> rolesAndAuthorities;
-    private final Account account;
+    private Account account;
 
     public UserDetailsImpl(Account account) {
         this.account = account;
-        this.username = account.getEmail();
-        this.password = account.getPassword();
-        this.rolesAndAuthorities = List.of(new SimpleGrantedAuthority(account.getRole()));
     }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return rolesAndAuthorities;
-    }
-
-    @Override
-    public String getPassword() {
-        return password;
-    }
-
-    @Override
-    public String getUsername() {
-        return username;
+        List<GrantedAuthority> authorities = new ArrayList<>();
+        //extract list of permissions (name)
+        this.account.getRoles().forEach(role -> {
+            GrantedAuthority authority = new SimpleGrantedAuthority(role);
+            authorities.add(authority);
+        });
+        return authorities;
     }
 
     public Account getAccount() {
         return account;
     }
 
+    @Override
+    public String getPassword() {
+        return account.getPassword();
+    }
+
+    @Override
+    public String getUsername() {
+        return account.getEmail();
+    }
 
     @Override
     public boolean isAccountNonExpired() {
@@ -49,7 +51,7 @@ public class UserDetailsImpl implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        return account.isAccountNonLocked();
+        return true;
     }
 
     @Override
